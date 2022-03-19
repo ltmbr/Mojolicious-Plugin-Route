@@ -10,7 +10,7 @@ use constant BASE => {
     references => {}
 };
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub register {
     my ($self, $app, $conf) = @_;
@@ -106,18 +106,13 @@ sub _route {
     my ($self, $app, $ref, $file, $base) = @_;
 
     my ($name, $ref_name) = $self->_ref_name($file, $base);
+    
+    my $params = [];
+    push(@$params, BASE->{references}->{$name})     if defined BASE->{references}->{$name};
+    push(@$params, BASE->{references}->{$ref_name}) if defined BASE->{references}->{$ref_name};
+    push(@$params, $app->routes);
 
-    $ref->route(
-        (
-            defined BASE->{references}->{$ref_name ? $ref_name . '::' . $name : $name}
-            ? (BASE->{references}->{$ref_name ? $ref_name . '::' . $name : $name}, $app->routes)
-            : ( 
-                $ref_name && defined BASE->{references}->{$ref_name}
-                ? (BASE->{references}->{$ref_name}, $app->routes)
-                : $app->routes
-            )
-        )
-    );
+    $ref->route(@$params);
 }
 
 sub _ref_name {
@@ -275,12 +270,16 @@ Similar to method any, the reference of the method under will be saved to be use
 
 =head1 OPTIONS
 
+=head2 namespace
+
     # Mojolicious::Lite
     plugin Route => {namespace => 'Foo'}; # $moniker::Foo
 
 Namespace to load routes from, defaults to $moniker::Route.
 
 =head1 EXAMPLES
+
+=head2 Example 1
 
     package MyApp::Route::Admin;
     use Mojo::Base 'MojoX::Route';
@@ -312,6 +311,49 @@ Namespace to load routes from, defaults to $moniker::Route.
         });
     }
 
+    1;
+    
+=head2 Example 2
+
+    package MyApp::Route::Base;
+    use Mojo::Base 'MojoX::Route';
+
+    sub under {
+        my ($self, $r) = @_;
+
+        $r->under('/base');
+    }  
+    
+    1;
+    
+    package MyApp::Route::Base::Page;
+    use Mojo::Base 'MojoX::Route';
+
+    sub under {
+        my ($self, $base, $r) = @_;
+
+        $r->under('/page');
+    }    
+    
+    sub route {    
+        my ($self, $under_above, $base, $r) = @_;
+        
+        # url /base/page/foo
+        $under_above->get('/foo' => sub {
+            shift->render(text => 'Foo');
+        }); 
+        
+        # url /base/bar
+        $base->get('/bar' => sub {
+            shift->render(text => 'Bar');
+        });
+        
+        # url /baz
+        $r->get('/baz' => sub {
+            shift->render(text => 'Baz');
+        });                       
+    }
+    
     1;
 
 =head1 SEE ALSO
