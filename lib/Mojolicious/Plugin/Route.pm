@@ -10,7 +10,7 @@ use constant BASE => {
     references => {}
 };
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub register {
     my ($self, $app, $conf) = @_;
@@ -108,8 +108,8 @@ sub _route {
     my ($name, $ref_name) = $self->_ref_name($file, $base);
     
     my $params = [];
-    push(@$params, BASE->{references}->{$name})     if defined BASE->{references}->{$name};
-    push(@$params, BASE->{references}->{$ref_name}) if defined BASE->{references}->{$ref_name};
+    push(@$params, BASE->{references}->{$name})     if $name     && defined BASE->{references}->{$name};
+    push(@$params, BASE->{references}->{$ref_name}) if $ref_name && defined BASE->{references}->{$ref_name};
     push(@$params, $app->routes);
 
     $ref->route(@$params);
