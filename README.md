@@ -107,6 +107,23 @@ Similar to method any, the reference of the method under will be saved to be use
 
 # OPTIONS
 
+## inverse
+
+    # Mojolicious::Lite
+    plugin Route => {inverse => 1};
+    
+Inverse option will pass the parameters with inverse format.
+
+If you define inverse to [Example 2](#Example-2) your methods need to receive parameters like this:
+
+    sub under {
+        my ($self, $r, $base) = @_; # parameters inverse
+    }    
+
+    sub route {    
+        my ($self, $r, $base, $under_above) = @_; # parameters inverse
+    }
+
 ## namespace
 
     # Mojolicious::Lite
