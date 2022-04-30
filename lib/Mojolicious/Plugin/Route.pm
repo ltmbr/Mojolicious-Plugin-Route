@@ -10,7 +10,7 @@ use constant BASE => {
     references => {}
 };
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub register {
     my ($self, $app, $conf) = @_;
@@ -388,6 +388,48 @@ Namespace to load routes from, defaults to $moniker::Route.
     }
     
     1;
+    
+=head2 Example 3
+
+    package MyApp::Route::Base;
+    use Mojo::Base 'MojoX::Route';
+
+    sub under {
+        my ($self, $r) = @_;
+
+        $r->under('/base');
+    }
+
+    1; 
+    
+    package MyApp::Route::Foo;
+    use Mojo::Base 'MyApp::Route::Base';
+
+    sub route {
+        my ($self, $base) = @_;
+
+        # will create route /base/foo
+        $base->get('/foo' => sub {
+            shift->render(text => 'Foo');
+        });
+    }
+
+    1;
+    
+    package MyApp::Route::Baz;
+    use Mojo::Base 'MyApp::Route::Base';
+
+    sub route {
+        my ($self, $base) = @_;
+
+        # will create route /base/baz
+        $base->get('/baz' => sub {
+            shift->render(text => 'Baz');
+        });
+    }
+
+    1;    
+      
 
 =head1 SEE ALSO
 
